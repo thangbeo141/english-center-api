@@ -16,4 +16,12 @@ const createUser = async (fullName, email, hashedPassword, role = 'student') => 
     return result.rows[0]; // Trả về thông tin user vừa được tạo (không trả về password)
 };
 
-module.exports = { findUserByEmail, createUser };
+// Hàm lấy danh sách tất cả học viên
+const getAllStudents = async () => {
+    // Không lấy cột password ra để bảo mật
+    const result = await pool.query(
+        "SELECT id, full_name, email, created_at FROM users WHERE role = 'student' ORDER BY created_at DESC"
+    );
+    return result.rows;
+};
+module.exports = { findUserByEmail, createUser, getAllStudents };

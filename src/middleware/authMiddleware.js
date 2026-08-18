@@ -27,4 +27,17 @@ const verifyToken = (req, res, next) => {
     }
 };
 
-module.exports = { verifyToken };
+// Middleware kiểm tra quyền truy cập
+const checkRole = (roles) => {
+    return (req, res, next) => {
+        // req.user đã được tạo ra từ middleware verifyToken chạy trước đó
+        if (!req.user || !roles.includes(req.user.role)) {
+            return res.status(403).json({ 
+                message: 'Bạn không có quyền thực hiện hành động này!' 
+            });
+        }
+        next(); // Nếu đúng role thì cho phép đi qua
+    };
+};
+
+module.exports = { verifyToken, checkRole };

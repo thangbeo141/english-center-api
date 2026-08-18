@@ -12,6 +12,10 @@ app.use(express.json()); // Giúp app đọc được data gửi lên dưới d�
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes); // Tiền tố chung cho các API liên quan đến auth
 
+
+const studentRoutes = require('./routes/studentRoutes');
+app.use('/api/students', studentRoutes);
+
 // Health Check API
 app.get('/health', (req, res) => {
     res.status(200).json({
