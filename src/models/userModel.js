@@ -24,4 +24,26 @@ const getAllStudents = async () => {
     );
     return result.rows;
 };
-module.exports = { findUserByEmail, createUser, getAllStudents };
+
+// Cập nhật thông tin học viên (hiện tại cho phép sửa Tên)
+const updateStudentName = async (id, fullName) => {
+    // Lưu ý: Thêm điều kiện role = 'student' để tránh việc Admin lỡ tay sửa nhầm tên của Admin khác
+    // Mệnh đề RETURNING giúp trả về luôn dữ liệu vừa được update xong
+    const result = await pool.query(
+        "UPDATE users SET full_name = $1 WHERE id = $2 AND role = 'student' RETURNING id, full_name, email, role",
+        [fullName, id]
+    );
+    return result.rows[0]; 
+};
+// Hàm xóa học viên
+const deleteStudent = async (id) => {
+    // Chỉ xóa nếu ID đó tồn tại và đang là học viên
+    const result = await pool.query(
+        "DELETE FROM users WHERE id = $1 AND role = 'student' RETURNING id",
+        [id]
+    );
+    // Nếu rowCount > 0 tức là đã xóa thành công ít nhất 1 dòng
+    return result.rowCount > 0; 
+    
+};
+module.exports = { findUserByEmail, createUser, getAllStudents, updateStudentName , deleteStudent };
