@@ -16,6 +16,12 @@ app.use('/api/auth', authRoutes); // Tiền tố chung cho các API liên quan �
 const studentRoutes = require('./routes/studentRoutes');
 app.use('/api/students', studentRoutes);
 
+const courseRoutes = require('./routes/courseRoutes');
+app.use('/api/courses', courseRoutes);
+
+const enrollmentRoutes = require('./routes/enrollmentRoutes');
+app.use('/api/enrollments', enrollmentRoutes); 
+
 // Health Check API
 app.get('/health', (req, res) => {
     res.status(200).json({

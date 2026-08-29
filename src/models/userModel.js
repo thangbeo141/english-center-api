@@ -25,6 +25,14 @@ const getAllStudents = async () => {
     return result.rows;
 };
 
+// Lấy danh sách Giáo viên
+const getAllTeachers = async () => {
+    const result = await pool.query(
+        "SELECT id, full_name, email, created_at FROM users WHERE role = 'teacher' ORDER BY created_at DESC"
+    );
+    return result.rows;
+};
+
 // Cập nhật thông tin học viên (hiện tại cho phép sửa Tên)
 const updateStudentName = async (id, fullName) => {
     // Lưu ý: Thêm điều kiện role = 'student' để tránh việc Admin lỡ tay sửa nhầm tên của Admin khác
@@ -46,4 +54,4 @@ const deleteStudent = async (id) => {
     return result.rowCount > 0; 
     
 };
-module.exports = { findUserByEmail, createUser, getAllStudents, updateStudentName , deleteStudent };
+module.exports = { findUserByEmail, createUser, getAllStudents, getAllTeachers, updateStudentName , deleteStudent };

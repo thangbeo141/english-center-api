@@ -1,0 +1,52 @@
+name: Node.js CI
+
+# Kịch bản này sẽ tự động chạy khi bạn push code lên nhánh main hoặc master
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    # Khai báo các dịch vụ phụ trợ (PostgreSQL) để bot có thể test kết nối nếu cần
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: matkhau123
+          POSTGRES_DB: english_center
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x] # Bot sẽ test code của bạn trên cả 2 phiên bản Node.js này
+
+    steps:
+    # 1. Tải source code của bạn từ GitHub xuống máy chủ ảo của bot
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # 2. Cài đặt môi trường Node.js theo phiên bản ma trận ở trên
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+
+    # 3. Cài đặt các gói thư viện (npm install)
+    - name: Install dependencies
+      run: npm install
+
+    # 4. Kiểm tra build hoặc chạy test (nếu dự án có lệnh test)
+    - name: Run build check
+      run: npm run build --if-present

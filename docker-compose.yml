@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  # 1. Hộp chứa Database (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: english_center_db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: matkhau123  # Sửa lại cho khớp với mật khẩu DB của bạn
+      POSTGRES_DB: english_center
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+  # 2. Hộp chứa Backend API (Node.js) của chúng ta
+  api:
+    build: .
+    container_name: english_center_api
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - DB_USER=postgres
+      - DB_HOST=db       # Điểm mấu chốt: Trỏ thẳng vào tên service 'db' ở trên thay vì 'localhost'
+      - DB_PASSWORD=matkhau123
+      - DB_NAME=english_center
+      - DB_PORT=5432
+      - JWT_SECRET=mat_khau_bi_mat_cua_ban
+      - JWT_EXPIRES_IN=1d   # BỔ SUNG DÒNG NÀY (1d = 1 ngày, hoặc 1h = 1 giờ)
+    depends_on:
+      - db
+
+# Giữ lại dữ liệu Database kể cả khi tắt Docker
+volumes:
+  pgdata:
