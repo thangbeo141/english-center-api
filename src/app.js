@@ -30,5 +30,8 @@ app.get('/health', (req, res) => {
     });
 });
 
+app.get('/', (req, res) => {
+    res.send('Hệ thống CD hoạt động mượt mà 100%!');
+});
 // Export app để server.js sử dụng
 module.exports = app;
