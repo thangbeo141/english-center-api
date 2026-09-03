@@ -50,12 +50,15 @@ const login = async (req, res) => {
         // 1. Tìm user trong database bằng email
         const user = await User.findUserByEmail(email);
 
-        // === THÊM DÒNG NÀY ĐỂ KHÁM NGHIỆM ===
+        // Khám nghiệm 1: Xem DB trả về gì
         console.log("DỮ LIỆU USER LẤY TỪ DB:", user);
         
         if (!user) {
             return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng!' });
         }
+
+        // === [MỚI BỔ SUNG] Khám nghiệm 2: Soi xem React gửi mật khẩu gì lên ===
+        console.log("Pass gửi lên từ React:", password);
 
         // 2. So sánh mật khẩu Client gửi lên với mật khẩu đã hash trong Database
         const isMatch = await bcrypt.compare(password, user.password);
@@ -64,7 +67,6 @@ const login = async (req, res) => {
         }
 
         // 3. Nếu đúng, tiến hành tạo JWT
-        // Payload là những thông tin mình muốn nhét vào token (ở đây là id và role)
         const payload = {
             id: user.id,
             role: user.role
@@ -74,7 +76,7 @@ const login = async (req, res) => {
             expiresIn: process.env.JWT_EXPIRES_IN
         });
 
-        // 4. Trả về token và thông tin user (nhớ loại bỏ password không trả về)
+        // 4. Trả về token và thông tin user
         res.status(200).json({
             message: 'Đăng nhập thành công!',
             token: token,
