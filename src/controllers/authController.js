@@ -49,6 +49,10 @@ const login = async (req, res) => {
 
         // 1. Tìm user trong database bằng email
         const user = await User.findUserByEmail(email);
+
+        // === THÊM DÒNG NÀY ĐỂ KHÁM NGHIỆM ===
+        console.log("DỮ LIỆU USER LẤY TỪ DB:", user);
+        
         if (!user) {
             return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng!' });
         }
