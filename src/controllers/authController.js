@@ -7,20 +7,32 @@ const register = async (req, res) => {
         // 1. Lấy dữ liệu do Client gửi lên trong body của request
         const { fullName, email, password } = req.body;
 
-        // 2. Kiểm tra xem email này đã có ai dùng chưa
+        // [MỚI BỔ SUNG] 2. Kiểm tra không được để trống
+        if (!fullName || !email || !password) {
+            return res.status(400).json({ message: 'Vui lòng điền đầy đủ thông tin!' });
+        }
+
+        // [MỚI BỔ SUNG] 3. Kiểm tra định dạng Email bằng Regex 
+        // Chỉ chấp nhận đuôi .com, .vn, hoặc .edu.vn
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|vn|edu\.vn)$/i;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ message: 'Email không đúng định dạng chuẩn!' });
+        }
+
+        // 4. Kiểm tra xem email này đã có ai dùng chưa
         const existingUser = await User.findUserByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: 'Email đã được sử dụng!' });
         }
 
-        // 3. Băm (hash) mật khẩu
+        // 5. Băm (hash) mật khẩu
         const saltRounds = 10; // Độ phức tạp của thuật toán băm (càng cao càng an toàn nhưng càng chậm)
         const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-        // 4. Lưu user mới vào Database thông qua Model
+        // 6. Lưu user mới vào Database thông qua Model
         const newUser = await User.createUser(fullName, email, hashedPassword);
 
-        // 5. Trả về kết quả thành công (HTTP Status 201: Created)
+        // 7. Trả về kết quả thành công (HTTP Status 201: Created)
         res.status(201).json({
             message: 'Đăng ký tài khoản thành công!',
             user: newUser
@@ -88,4 +100,5 @@ const getMe = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server' });
     }
 };
+
 module.exports = { register, login, getMe };
