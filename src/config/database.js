@@ -8,6 +8,10 @@ const pool = new Pool({
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
     port: process.env.DB_PORT,
+    // Thêm đoạn cấu hình SSL này vào:
+  ssl: {
+    rejectUnauthorized: false
+  }
 });
 
 // Bắt sự kiện khi kết nối thành công để log ra console
