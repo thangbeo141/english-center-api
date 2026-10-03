@@ -1,4 +1,36 @@
 const User = require('../models/userModel');
+const bcrypt = require('bcrypt');
+
+const createStudent = async (req, res) => {
+    const { fullName, email, password } = req.body;
+
+    if (!fullName || !email || !password) {
+        return res.status(400).json({ message: 'Vui lòng điền đầy đủ họ tên, email và mật khẩu!' });
+    }
+
+    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|vn|edu\.vn)$/i;
+    if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: 'Email không đúng định dạng chuẩn!' });
+    }
+
+    try {
+        const existingUser = await User.findUserByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ message: 'Email đã được sử dụng!' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newStudent = await User.createUser(fullName, email, hashedPassword, 'student');
+
+        res.status(201).json({
+            message: 'Thêm học viên thành công!',
+            data: newStudent
+        });
+    } catch (error) {
+        console.error('Lỗi khi thêm học viên:', error);
+        res.status(500).json({ message: 'Lỗi server nội bộ' });
+    }
+};
 
 const getStudentsList = async (req, res) => {
     try {
@@ -64,4 +96,4 @@ const deleteStudent = async (req, res) => {
     }
 };
 
-module.exports = { getStudentsList, updateStudent, deleteStudent };
+module.exports = { createStudent, getStudentsList, updateStudent, deleteStudent };
