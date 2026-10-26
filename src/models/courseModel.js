@@ -27,4 +27,15 @@ const assignTeacher = async (courseId, teacherId) => {
     return result.rows[0];
 };
 
-module.exports = { createCourse, getAllCourses, assignTeacher };
+// Lấy danh sách khóa học mà giáo viên đang dạy
+const getTeachingCourses = async (teacherId) => {
+    const result = await pool.query(
+        `SELECT c.* FROM courses c
+         JOIN course_teachers ct ON c.id = ct.course_id
+         WHERE ct.teacher_id = $1`,
+        [teacherId]
+    );
+    return result.rows;
+};
+
+module.exports = { createCourse, getAllCourses, assignTeacher, getTeachingCourses };

@@ -34,6 +34,21 @@ const getCourses = async (req, res) => {
         res.status(500).json({ message: 'Lỗi server nội bộ' });
     }
 };
+// lấy danh sách khóa học của giáo viên
+const getTeachingCourses = async (req, res) => {
+    const teacherId = req.user.id; // Lấy ID giáo viên từ token
+    try {
+        const courses = await Course.getTeachingCourses(teacherId);
+        res.status(200).json({
+            message: 'Lấy danh sách khóa học của giáo viên thành công',
+            total: courses.length,
+            data: courses
+        });
+    } catch (error) {
+        console.error('Lỗi lấy danh sách khóa học của giáo viên:', error);
+        res.status(500).json({ message: 'Lỗi server nội bộ' });
+    }
+};
 
 // Admin gán giáo viên
 const assignTeacherToCourse = async (req, res) => {
@@ -58,6 +73,4 @@ const assignTeacherToCourse = async (req, res) => {
     }
 };
 
-
-
-module.exports = { addCourse, getCourses, assignTeacherToCourse };
+module.exports = { addCourse, getCourses, assignTeacherToCourse, getTeachingCourses };

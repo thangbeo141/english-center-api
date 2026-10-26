@@ -1,5 +1,5 @@
 const express = require('express');
-const { createStudent, getStudentsList, updateStudent, deleteStudent } = require('../controllers/studentController');
+const { createStudent, getStudentsList, getTeachersList, updateStudent, deleteStudent } = require('../controllers/studentController');
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -10,6 +10,9 @@ router.get('/', verifyToken, checkRole(['admin', 'teacher']), getStudentsList);
 
 // Tạo học viên mới (chỉ Admin mới có quyền thêm)
 router.post('/', verifyToken, checkRole(['admin']), createStudent);
+
+// Lấy danh sách giáo viên để phân công khóa học (chỉ Admin)
+router.get('/teachers', verifyToken, checkRole(['admin']), getTeachersList);
 
 // API MỚI: Cập nhật thông tin học viên (chỉ Admin mới có quyền sửa)
 router.put('/:id', verifyToken, checkRole(['admin']), updateStudent);

@@ -1,32 +1,20 @@
 const User = require('../models/userModel');
-const bcrypt = require('bcrypt');
+const { createAccount } = require('../services/userService');
 
 const createStudent = async (req, res) => {
     const { fullName, email, password } = req.body;
 
-    if (!fullName || !email || !password) {
-        return res.status(400).json({ message: 'Vui lòng điền đầy đủ họ tên, email và mật khẩu!' });
-    }
-
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.(com|vn|edu\.vn)$/i;
-    if (!emailRegex.test(email)) {
-        return res.status(400).json({ message: 'Email không đúng định dạng chuẩn!' });
-    }
-
     try {
-        const existingUser = await User.findUserByEmail(email);
-        if (existingUser) {
-            return res.status(400).json({ message: 'Email đã được sử dụng!' });
-        }
-
-        const hashedPassword = await bcrypt.hash(password, 10);
-        const newStudent = await User.createUser(fullName, email, hashedPassword, 'student');
+        const newStudent = await createAccount({ fullName, email, password, role: 'student' });
 
         res.status(201).json({
             message: 'Thêm học viên thành công!',
             data: newStudent
         });
     } catch (error) {
+        if (error.code === 'VALIDATION_ERROR' || error.code === 'EMAIL_EXISTS') {
+            return res.status(400).json({ message: error.message });
+        }
         console.error('Lỗi khi thêm học viên:', error);
         res.status(500).json({ message: 'Lỗi server nội bộ' });
     }
@@ -42,6 +30,20 @@ const getStudentsList = async (req, res) => {
         });
     } catch (error) {
         console.error('Lỗi khi lấy danh sách học viên:', error);
+        res.status(500).json({ message: 'Lỗi server nội bộ' });
+    }
+};
+
+const getTeachersList = async (req, res) => {
+    try {
+        const teachers = await User.getAllTeachers();
+        res.status(200).json({
+            message: 'Lấy danh sách giáo viên thành công',
+            total: teachers.length,
+            data: teachers
+        });
+    } catch (error) {
+        console.error('Lỗi khi lấy danh sách giáo viên:', error);
         res.status(500).json({ message: 'Lỗi server nội bộ' });
     }
 };
@@ -96,4 +98,4 @@ const deleteStudent = async (req, res) => {
     }
 };
 
-module.exports = { createStudent, getStudentsList, updateStudent, deleteStudent };
+module.exports = { createStudent, getStudentsList, getTeachersList, updateStudent, deleteStudent };
