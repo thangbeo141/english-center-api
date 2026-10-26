@@ -1,5 +1,5 @@
 const express = require('express');
-const { addCourse, getCourses,assignTeacherToCourse,get} = require('../controllers/courseController');
+const { addCourse, getCourses,assignTeacherToCourse,getTeachingCourses} = require('../controllers/courseController');
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 
 const router = express.Router();
