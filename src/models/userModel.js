@@ -7,6 +7,11 @@ const findUserByEmail = async (email) => {
     return result.rows[0]; // Trả về user đầu tiên tìm thấy, nếu không có sẽ trả về undefined
 };
 
+const findUserById = async (id) => {
+    const result = await pool.query('SELECT * FROM users WHERE id = $1', [id]);
+    return result.rows[0];
+};
+
 // Hàm thêm user mới
 const createUser = async (fullName, email, hashedPassword, role = 'student') => {
     const result = await pool.query(
@@ -54,4 +59,37 @@ const deleteStudent = async (id) => {
     return result.rowCount > 0; 
     
 };
-module.exports = { findUserByEmail, createUser, getAllStudents, getAllTeachers, updateStudentName , deleteStudent };
+
+// Cập nhật thông tin hồ sơ của chính người dùng đang đăng nhập.
+const updateProfile = async (id, { fullName, email, password }) => {
+    const values = [fullName, email];
+    let query = `
+        UPDATE users
+        SET full_name = $1, email = $2
+    `;
+
+    if (password) {
+        values.push(password);
+        query += `, password = $3`;
+    }
+
+    values.push(id);
+    query += `
+        WHERE id = $${values.length}
+        RETURNING id, full_name, email, role, created_at
+    `;
+
+    const result = await pool.query(query, values);
+    return result.rows[0];
+};
+
+module.exports = {
+    findUserByEmail,
+    findUserById,
+    createUser,
+    getAllStudents,
+    getAllTeachers,
+    updateStudentName,
+    deleteStudent,
+    updateProfile
+};

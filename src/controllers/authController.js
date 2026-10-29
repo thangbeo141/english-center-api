@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/userModel');
-const { createAccount } = require('../services/userService');
+const { createAccount, updateAccount } = require('../services/userService');
 
 const register = async (req, res) => {
     try {
@@ -74,15 +74,65 @@ const login = async (req, res) => {
 
 const getMe = async (req, res) => {
     try {
-        // Nhờ middleware `verifyToken` đã chạy trước đó, ta có sẵn `req.user`
-        // Bây giờ chỉ cần trả thông tin đó về cho Client
+        const user = await User.findUserById(req.user.id);
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng!' });
+        }
+
         res.status(200).json({
             message: 'Truy cập thông tin cá nhân thành công!',
-            user: req.user 
+            user: {
+                id: user.id,
+                fullName: user.full_name,
+                email: user.email,
+                role: user.role,
+                createdAt: user.created_at
+            }
         });
     } catch (error) {
+        console.error('Lỗi khi lấy hồ sơ:', error);
         res.status(500).json({ message: 'Lỗi server' });
     }
 };
 
-module.exports = { register, login, getMe };
+const updateMe = async (req, res) => {
+    try {
+        const { fullName, email, currentPassword, newPassword } = req.body;
+        const user = await updateAccount(req.user.id, {
+            fullName: fullName?.trim(),
+            email: email?.trim().toLowerCase(),
+            currentPassword,
+            newPassword
+        });
+
+        if (!user) {
+            return res.status(404).json({ message: 'Không tìm thấy người dùng!' });
+        }
+
+        res.status(200).json({
+            message: 'Cập nhật hồ sơ thành công!',
+            user: {
+                id: user.id,
+                fullName: user.full_name,
+                email: user.email,
+                role: user.role,
+                createdAt: user.created_at
+            }
+        });
+    } catch (error) {
+        if (error.code === 'USER_NOT_FOUND') {
+            return res.status(404).json({ message: error.message });
+        }
+        if (['VALIDATION_ERROR', 'EMAIL_EXISTS', 'INVALID_PASSWORD'].includes(error.code)) {
+            return res.status(error.code === 'INVALID_PASSWORD' ? 401 : 400)
+                .json({ message: error.message });
+        }
+        if (error.code === '23505') {
+            return res.status(400).json({ message: 'Email đã được sử dụng!' });
+        }
+        console.error('Lỗi khi cập nhật hồ sơ:', error);
+        res.status(500).json({ message: 'Lỗi server nội bộ' });
+    }
+};
+
+module.exports = { register, login, getMe, updateMe };
