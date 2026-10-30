@@ -52,15 +52,19 @@ const getTeachingCourses = async (req, res) => {
 
 // Admin gán giáo viên
 const assignTeacherToCourse = async (req, res) => {
-    const courseId = req.params.id; // Lấy ID khóa học từ thanh URL
-    const { teacherId } = req.body; // Lấy ID giáo viên từ Body JSON
+    const courseId = Number(req.params.id);
+    const { teacherId } = req.body;
 
-    if (!teacherId) {
-        return res.status(400).json({ message: 'Vui lòng cung cấp ID giáo viên!' });
+    if (!/^\d+$/.test(req.params.id) || !Number.isInteger(courseId) || courseId <= 0) {
+        return res.status(400).json({ message: 'ID khóa học không hợp lệ!' });
+    }
+
+    if (!Number.isInteger(Number(teacherId)) || Number(teacherId) <= 0) {
+        return res.status(400).json({ message: 'ID giáo viên không hợp lệ!' });
     }
 
     try {
-        const assignment = await Course.assignTeacher(courseId, teacherId);
+        const assignment = await Course.assignTeacher(courseId, Number(teacherId));
         
         if (!assignment) {
             return res.status(400).json({ message: 'Giáo viên này đã được phân công vào khóa này rồi!' });

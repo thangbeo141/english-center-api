@@ -37,9 +37,7 @@ const getTeachingCourses = async (teacherId) => {
     );
     return result.rows;
 };
-
-// Lấy danh sách học viên theo khóa học.
-// Giáo viên chỉ được xem các khóa mà mình đã được phân công.
+// Lấy danh sách học viên theo khóa học
 const getStudentsByCourse = async (courseId, viewer) => {
     const values = [courseId];
     let teacherFilter = '';
@@ -61,8 +59,14 @@ const getStudentsByCourse = async (courseId, viewer) => {
         WHERE e.course_id = $1
         ORDER BY u.full_name ASC
     `;
+
     const result = await pool.query(query, values);
     return result.rows;
 };
-
-module.exports = { createCourse, getAllCourses, assignTeacher, getTeachingCourses, getStudentsByCourse };
+module.exports = {
+    createCourse,
+    getAllCourses,
+    assignTeacher,
+    getTeachingCourses,
+    getStudentsByCourse
+};
