@@ -1,5 +1,6 @@
 const User = require('../models/userModel');
 const { createAccount } = require('../services/userService');
+const { successResponse, errorResponse } = require('../utils/response');
 
 const createStudent = async (req, res) => {
     const { fullName, email, password } = req.body;
@@ -7,44 +8,33 @@ const createStudent = async (req, res) => {
     try {
         const newStudent = await createAccount({ fullName, email, password, role: 'student' });
 
-        res.status(201).json({
-            message: 'Thêm học viên thành công!',
-            data: newStudent
-        });
+        successResponse(res, 201, 'Thêm học viên thành công!', newStudent);
     } catch (error) {
         if (error.code === 'VALIDATION_ERROR' || error.code === 'EMAIL_EXISTS') {
-            return res.status(400).json({ message: error.message });
+            return errorResponse(res, 400, error.message);
         }
         console.error('Lỗi khi thêm học viên:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
 const getStudentsList = async (req, res) => {
     try {
         const students = await User.getAllStudents();
-        res.status(200).json({
-            message: 'Lấy danh sách học viên thành công',
-            total: students.length,
-            data: students
-        });
+        successResponse(res, 200, 'Lấy danh sách học viên thành công', students, students.length);
     } catch (error) {
         console.error('Lỗi khi lấy danh sách học viên:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
 const getTeachersList = async (req, res) => {
     try {
         const teachers = await User.getAllTeachers();
-        res.status(200).json({
-            message: 'Lấy danh sách giáo viên thành công',
-            total: teachers.length,
-            data: teachers
-        });
+        successResponse(res, 200, 'Lấy danh sách giáo viên thành công', teachers, teachers.length);
     } catch (error) {
         console.error('Lỗi khi lấy danh sách giáo viên:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
@@ -56,7 +46,7 @@ const updateStudent = async (req, res) => {
 
     // Validate cơ bản
     if (!fullName) {
-        return res.status(400).json({ message: 'Vui lòng cung cấp tên mới (fullName)!' });
+        return errorResponse(res, 400, 'Vui lòng cung cấp tên mới (fullName)!');
     }
 
     try {
@@ -64,16 +54,13 @@ const updateStudent = async (req, res) => {
         
         // Nếu updatedUser bị undefined (do ID không tồn tại hoặc người đó không phải student)
         if (!updatedUser) {
-            return res.status(404).json({ message: 'Không tìm thấy học viên hoặc tài khoản này không phải học viên!' });
+            return errorResponse(res, 404, 'Không tìm thấy học viên hoặc tài khoản này không phải học viên!');
         }
 
-        res.status(200).json({
-            message: 'Cập nhật thông tin thành công',
-            data: updatedUser
-        });
+        successResponse(res, 200, 'Cập nhật thông tin thành công', updatedUser);
     } catch (error) {
         console.error('Lỗi khi cập nhật học viên:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
@@ -84,17 +71,13 @@ const deleteStudent = async (req, res) => {
         const isDeleted = await User.deleteStudent(studentId);
         
         if (!isDeleted) {
-            return res.status(404).json({ 
-                message: 'Không tìm thấy học viên hoặc tài khoản này không phải học viên!' 
-            });
+            return errorResponse(res, 404, 'Không tìm thấy học viên hoặc tài khoản này không phải học viên!');
         }
 
-        res.status(200).json({
-            message: 'Đã xóa học viên thành công!'
-        });
+        successResponse(res, 200, 'Đã xóa học viên thành công!', null);
     } catch (error) {
         console.error('Lỗi khi xóa học viên:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 

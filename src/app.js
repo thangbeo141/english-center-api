@@ -1,5 +1,6 @@
 const express = require('express');
 const cors = require('cors');
+const { successResponse, errorResponse } = require('./utils/response');
 
 // Khởi tạo app Express
 const app = express();
@@ -24,14 +25,20 @@ app.use('/api/enrollments', enrollmentRoutes);
 
 // Health Check API
 app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: 'success',
-        message: 'English Center API is running!'
-    });
+    successResponse(res, 200, 'English Center API is running!', null);
 });
 
 app.get('/', (req, res) => {
-    res.send('Hệ thống CD hoạt động mượt mà 100%!');
+    successResponse(res, 200, 'Hệ thống CD hoạt động mượt mà 100%!', null);
+});
+
+app.use((req, res) => {
+    errorResponse(res, 404, 'Không tìm thấy API yêu cầu!');
+});
+
+app.use((error, req, res, next) => {
+    console.error('Lỗi không xử lý được:', error);
+    errorResponse(res, 500, 'Lỗi server nội bộ');
 });
 // Export app để server.js sử dụng
 module.exports = app;

@@ -1,4 +1,5 @@
 const Enrollment = require('../models/enrollmentModel');
+const { successResponse, errorResponse } = require('../utils/response');
 
 // Học viên đăng ký khóa học
 const enroll = async (req, res) => {
@@ -7,7 +8,7 @@ const enroll = async (req, res) => {
     const { courseId } = req.body;
 
     if (!courseId) {
-        return res.status(400).json({ message: 'Vui lòng cung cấp ID khóa học (courseId)!' });
+        return errorResponse(res, 400, 'Vui lòng cung cấp ID khóa học (courseId)!');
     }
 
     try {
@@ -15,16 +16,13 @@ const enroll = async (req, res) => {
         
         // Nếu newEnrollment bị undefined (do câu lệnh ON CONFLICT DO NOTHING chặn lại)
         if (!newEnrollment) {
-            return res.status(400).json({ message: 'Bạn đã đăng ký khóa học này từ trước rồi!' });
+            return errorResponse(res, 400, 'Bạn đã đăng ký khóa học này từ trước rồi!');
         }
 
-        res.status(201).json({
-            message: 'Đăng ký khóa học thành công!',
-            data: newEnrollment
-        });
+        successResponse(res, 201, 'Đăng ký khóa học thành công!', newEnrollment);
     } catch (error) {
         console.error('Lỗi khi ghi danh:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
@@ -34,14 +32,10 @@ const getMyCourses = async (req, res) => {
 
     try {
         const courses = await Enrollment.getStudentCourses(studentId);
-        res.status(200).json({
-            message: 'Lấy danh sách khóa học của bạn thành công',
-            total: courses.length,
-            data: courses
-        });
+        successResponse(res, 200, 'Lấy danh sách khóa học của bạn thành công', courses, courses.length);
     } catch (error) {
         console.error('Lỗi lấy danh sách khóa học đang học:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 

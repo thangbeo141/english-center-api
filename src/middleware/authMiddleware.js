@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
+const { errorResponse } = require('../utils/response');
 
 const verifyToken = (req, res, next) => {
     // 1. Lấy token từ header 'Authorization' của request
@@ -10,7 +11,7 @@ const verifyToken = (req, res, next) => {
 
     // 2. Nếu không có token gửi lên -> Chặn lại
     if (!token) {
-        return res.status(401).json({ message: 'Không tìm thấy token, từ chối truy cập!' });
+        return errorResponse(res, 401, 'Không tìm thấy token, từ chối truy cập!');
     }
 
     try {
@@ -23,7 +24,7 @@ const verifyToken = (req, res, next) => {
         // 5. Cho phép đi tiếp đến hàm tiếp theo (Controller)
         next(); 
     } catch (error) {
-        return res.status(403).json({ message: 'Token không hợp lệ hoặc đã hết hạn!' });
+        return errorResponse(res, 403, 'Token không hợp lệ hoặc đã hết hạn!');
     }
 };
 
@@ -32,9 +33,7 @@ const checkRole = (roles) => {
     return (req, res, next) => {
         // req.user đã được tạo ra từ middleware verifyToken chạy trước đó
         if (!req.user || !roles.includes(req.user.role)) {
-            return res.status(403).json({ 
-                message: 'Bạn không có quyền thực hiện hành động này!' 
-            });
+            return errorResponse(res, 403, 'Bạn không có quyền thực hiện hành động này!');
         }
         next(); // Nếu đúng role thì cho phép đi qua
     };

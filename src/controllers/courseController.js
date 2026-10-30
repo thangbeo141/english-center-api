@@ -1,22 +1,20 @@
 const Course = require('../models/courseModel');
+const { successResponse, errorResponse } = require('../utils/response');
 
 // Xử lý tạo khóa học
 const addCourse = async (req, res) => {
     const { title, description, price } = req.body;
 
     if (!title || !price) {
-        return res.status(400).json({ message: 'Vui lòng nhập đủ Tên khóa học và Giá tiền!' });
+        return errorResponse(res, 400, 'Vui lòng nhập đủ Tên khóa học và Giá tiền!');
     }
 
     try {
         const newCourse = await Course.createCourse(title, description, price);
-        res.status(201).json({
-            message: 'Tạo khóa học thành công',
-            data: newCourse
-        });
+        successResponse(res, 201, 'Tạo khóa học thành công', newCourse);
     } catch (error) {
         console.error('Lỗi tạo khóa học:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
@@ -24,14 +22,10 @@ const addCourse = async (req, res) => {
 const getCourses = async (req, res) => {
     try {
         const courses = await Course.getAllCourses();
-        res.status(200).json({
-            message: 'Lấy danh sách khóa học thành công',
-            total: courses.length,
-            data: courses
-        });
+        successResponse(res, 200, 'Lấy danh sách khóa học thành công', courses, courses.length);
     } catch (error) {
         console.error('Lỗi lấy danh sách khóa học:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 // lấy danh sách khóa học của giáo viên
@@ -39,14 +33,10 @@ const getTeachingCourses = async (req, res) => {
     const teacherId = req.user.id; // Lấy ID giáo viên từ token
     try {
         const courses = await Course.getTeachingCourses(teacherId);
-        res.status(200).json({
-            message: 'Lấy danh sách khóa học của giáo viên thành công',
-            total: courses.length,
-            data: courses
-        });
+        successResponse(res, 200, 'Lấy danh sách khóa học của giáo viên thành công', courses, courses.length);
     } catch (error) {
         console.error('Lỗi lấy danh sách khóa học của giáo viên:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
@@ -56,24 +46,24 @@ const assignTeacherToCourse = async (req, res) => {
     const { teacherId } = req.body;
 
     if (!/^\d+$/.test(req.params.id) || !Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({ message: 'ID khóa học không hợp lệ!' });
+        return errorResponse(res, 400, 'ID khóa học không hợp lệ!');
     }
 
     if (!Number.isInteger(Number(teacherId)) || Number(teacherId) <= 0) {
-        return res.status(400).json({ message: 'ID giáo viên không hợp lệ!' });
+        return errorResponse(res, 400, 'ID giáo viên không hợp lệ!');
     }
 
     try {
         const assignment = await Course.assignTeacher(courseId, Number(teacherId));
         
         if (!assignment) {
-            return res.status(400).json({ message: 'Giáo viên này đã được phân công vào khóa này rồi!' });
+            return errorResponse(res, 400, 'Giáo viên này đã được phân công vào khóa này rồi!');
         }
 
-        res.status(201).json({ message: 'Gán giáo viên thành công!', data: assignment });
+        successResponse(res, 201, 'Gán giáo viên thành công!', assignment);
     } catch (error) {
         console.error('Lỗi khi gán giáo viên:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
@@ -82,19 +72,15 @@ const getStudentsByCourse = async (req, res) => {
     const courseId = Number(req.params.id);
 
     if (!/^\d+$/.test(req.params.id) || !Number.isInteger(courseId) || courseId <= 0) {
-        return res.status(400).json({ message: 'ID khóa học không hợp lệ!' });
+        return errorResponse(res, 400, 'ID khóa học không hợp lệ!');
     }
 
     try {
         const students = await Course.getStudentsByCourse(courseId, req.user);
-        res.status(200).json({
-            message: 'Lấy danh sách học viên của khóa học thành công',
-            total: students.length,
-            data: students
-        });
+        successResponse(res, 200, 'Lấy danh sách học viên của khóa học thành công', students, students.length);
     } catch (error) {
         console.error('Lỗi lấy danh sách học viên của khóa học:', error);
-        res.status(500).json({ message: 'Lỗi server nội bộ' });
+        errorResponse(res, 500, 'Lỗi server nội bộ');
     }
 };
 
