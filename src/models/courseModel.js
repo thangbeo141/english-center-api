@@ -38,4 +38,31 @@ const getTeachingCourses = async (teacherId) => {
     return result.rows;
 };
 
-module.exports = { createCourse, getAllCourses, assignTeacher, getTeachingCourses };
+// Lấy danh sách học viên theo khóa học.
+// Giáo viên chỉ được xem các khóa mà mình đã được phân công.
+const getStudentsByCourse = async (courseId, viewer) => {
+    const values = [courseId];
+    let teacherFilter = '';
+
+    if (viewer.role === 'teacher') {
+        values.push(viewer.id);
+        teacherFilter = `
+            JOIN course_teachers ct
+                ON ct.course_id = e.course_id
+               AND ct.teacher_id = $2
+        `;
+    }
+
+    const query = `
+        SELECT u.id, u.full_name AS name, u.email
+        FROM users u
+        JOIN enrollments e ON u.id = e.user_id
+        ${teacherFilter}
+        WHERE e.course_id = $1
+        ORDER BY u.full_name ASC
+    `;
+    const result = await pool.query(query, values);
+    return result.rows;
+};
+
+module.exports = { createCourse, getAllCourses, assignTeacher, getTeachingCourses, getStudentsByCourse };

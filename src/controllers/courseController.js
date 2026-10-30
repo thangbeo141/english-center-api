@@ -73,4 +73,25 @@ const assignTeacherToCourse = async (req, res) => {
     }
 };
 
-module.exports = { addCourse, getCourses, assignTeacherToCourse, getTeachingCourses };
+// Lấy danh sách học viên theo khóa học
+const getStudentsByCourse = async (req, res) => {
+    const courseId = Number(req.params.id);
+
+    if (!/^\d+$/.test(req.params.id) || !Number.isInteger(courseId) || courseId <= 0) {
+        return res.status(400).json({ message: 'ID khóa học không hợp lệ!' });
+    }
+
+    try {
+        const students = await Course.getStudentsByCourse(courseId, req.user);
+        res.status(200).json({
+            message: 'Lấy danh sách học viên của khóa học thành công',
+            total: students.length,
+            data: students
+        });
+    } catch (error) {
+        console.error('Lỗi lấy danh sách học viên của khóa học:', error);
+        res.status(500).json({ message: 'Lỗi server nội bộ' });
+    }
+};
+
+module.exports = { addCourse, getCourses, assignTeacherToCourse, getTeachingCourses, getStudentsByCourse };

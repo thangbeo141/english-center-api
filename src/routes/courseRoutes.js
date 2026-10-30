@@ -1,5 +1,5 @@
 const express = require('express');
-const { addCourse, getCourses,assignTeacherToCourse,getTeachingCourses} = require('../controllers/courseController');
+const { addCourse, getCourses,assignTeacherToCourse,getTeachingCourses,getStudentsByCourse} = require('../controllers/courseController');
 const { verifyToken, checkRole } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -16,4 +16,5 @@ router.post('/:id/assign-teacher', verifyToken, checkRole(['admin']), assignTeac
 //API cho GIáo viên xem lịch dạy
 router.get('/teaching', verifyToken, checkRole(['teacher']),getTeachingCourses); 
 
+router.get('/:id/students', verifyToken, checkRole(['admin', 'teacher']), getStudentsByCourse);
 module.exports = router;
