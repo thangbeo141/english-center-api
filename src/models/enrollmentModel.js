@@ -13,6 +13,14 @@ const enrollStudent = async (studentId, courseId) => {
     return result.rows[0];
 };
 
+const courseExists = async (courseId) => {
+    const result = await pool.query(
+        'SELECT 1 FROM courses WHERE id = $1',
+        [courseId]
+    );
+    return result.rowCount > 0;
+};
+
 // Xem danh sách các khóa học mà 1 học viên đã đăng ký (Dùng JOIN 2 bảng)
 const getStudentCourses = async (studentId) => {
     const result = await pool.query(
@@ -25,4 +33,4 @@ const getStudentCourses = async (studentId) => {
     return result.rows;
 };
 
-module.exports = { enrollStudent, getStudentCourses };
+module.exports = { enrollStudent, courseExists, getStudentCourses };

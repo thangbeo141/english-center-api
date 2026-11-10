@@ -7,12 +7,18 @@ const enroll = async (req, res) => {
     const studentId = req.user.id; 
     const { courseId } = req.body;
 
-    if (!courseId) {
-        return errorResponse(res, 400, 'Vui lòng cung cấp ID khóa học (courseId)!');
+    const parsedCourseId = Number(courseId);
+
+    if (!Number.isInteger(parsedCourseId) || parsedCourseId <= 0) {
+        return errorResponse(res, 400, 'ID khóa học không hợp lệ!');
     }
 
     try {
-        const newEnrollment = await Enrollment.enrollStudent(studentId, courseId);
+        if (!(await Enrollment.courseExists(parsedCourseId))) {
+            return errorResponse(res, 404, 'Không tìm thấy khóa học!');
+        }
+
+        const newEnrollment = await Enrollment.enrollStudent(studentId, parsedCourseId);
         
         // Nếu newEnrollment bị undefined (do câu lệnh ON CONFLICT DO NOTHING chặn lại)
         if (!newEnrollment) {

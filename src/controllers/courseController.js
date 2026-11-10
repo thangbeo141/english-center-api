@@ -5,7 +5,7 @@ const { successResponse, errorResponse } = require('../utils/response');
 const addCourse = async (req, res) => {
     const { title, description, price } = req.body;
 
-    if (!title || !price) {
+    if (!title || price === undefined || price === null || Number.isNaN(Number(price)) || Number(price) < 0) {
         return errorResponse(res, 400, 'Vui lòng nhập đủ Tên khóa học và Giá tiền!');
     }
 
